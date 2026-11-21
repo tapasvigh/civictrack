@@ -1,6 +1,6 @@
 # Civic Track
 
-Civic Track is a student-friendly app for keeping community-service and school commitments organized. It brings volunteer-hour logging, assignments, goals, calendars, and progress reports together in one responsive interface.
+Civic Track is a student, work, and day to day-friendly app for keeping community-service, school commitments, assignments, and any tasks organized. It brings volunteer-hour logging, assignments, goals, calendars, and progress reports together in one responsive interface.
 
 ## What the application does
 
