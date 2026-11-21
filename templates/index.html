@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#20b9b2">
+  <meta name="description" content="Track volunteer hours, assignments, goals, and community impact with Civic Track.">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="Civic Track">
+  <link rel="manifest" href="{{ url_for('static', filename='manifest.webmanifest') }}">
+  <link rel="icon" type="image/png" sizes="192x192" href="{{ url_for('static', filename='icons/civic-track-192.png') }}">
+  <link rel="apple-touch-icon" href="{{ url_for('static', filename='icons/apple-touch-icon.png') }}">
+  <link rel="preload" href="{{ url_for('static', filename='fonts/bitter-latin.woff2') }}" as="font" type="font/woff2" crossorigin>
+  <title>Civic Track</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}?v=11">
+  <script src="{{ url_for('static', filename='app.js') }}" defer></script>
+</head>
+<body>
+  <div id="network-status" class="network-status" role="status" hidden></div>
+  <main id="welcome" class="welcome-screen">
+    <section class="welcome-card">
+      <img class="logo-mark" src="{{ url_for('static', filename='site-logo.png') }}" alt="Civic Track logo">
+      <p class="eyebrow">Make every hour count</p>
+      <h1>Welcome to Civic Track</h1>
+      <p class="welcome-copy">A friendly place to keep your community service and school goals moving forward.</p>
+      <div class="helps"><strong>Helps you:</strong><ul>
+        <li>Log your volunteer hours</li><li>Keep track of assignments</li>
+        <li>Celebrate achievements with badges</li><li>See your progress over time</li>
+      </ul></div>
+      <div class="welcome-actions"><button id="start-button" class="button button-light">Start</button><button id="welcome-login" class="button button-glass" hidden>Log In</button><button id="welcome-install-app" class="button button-glass">Install app</button></div>
+    </section>
+  </main>
+
+  <main id="auth-screen" class="welcome-screen auth-screen" hidden>
+    <section class="auth-card">
+      <button id="back-welcome" class="text-button back-button">← Welcome</button>
+      <div class="auth-tabs"><button class="auth-tab active" data-auth-tab="signup">Sign Up</button><button class="auth-tab" data-auth-tab="login">Log In</button></div>
+      <div id="signup-pane" class="auth-pane">
+        <p class="eyebrow">YOUR CIVIC TRACK ACCOUNT</p><h1>Create your account</h1>
+        <p class="form-hint">This app stores your account and records in its local database. Use fictional information.</p>
+        <form id="signup-form" class="form-grid">
+          <label class="full-width">Full name<input name="full_name" maxlength="120" autocomplete="name" required></label>
+          <label>Birthdate<input name="birthdate" type="date" required></label>
+          <label>Username<input name="username" maxlength="60" autocomplete="username" required></label>
+          <label>Email<input name="email" type="email" maxlength="254" autocomplete="email"></label>
+          <label>Phone (optional)<input name="phone" type="tel" maxlength="40" autocomplete="tel"></label>
+          <label class="full-width">Password (at least 8 characters)<input name="password" type="password" minlength="8" autocomplete="new-password" required></label>
+          <label class="full-width">Profile picture (optional)<input name="photo" type="file" accept="image/png,image/jpeg,image/webp"></label>
+          <div class="full-width verification-note">Email/text verification and cloud accounts are not configured.</div>
+          <div class="full-width"><button class="button button-primary" type="submit">Create account</button></div>
+        </form>
+      </div>
+      <div id="login-pane" class="auth-pane" hidden>
+        <p class="eyebrow">WELCOME BACK</p><h1>Log in to Civic Track</h1>
+        <form id="login-form" class="form-grid">
+          <label class="full-width">Username<input name="username" autocomplete="username" required></label>
+          <label class="full-width">Password<input name="password" type="password" autocomplete="current-password" required></label>
+          <button type="button" id="forgot-link" class="text-button">Forgot password?</button>
+          <div class="full-width"><button class="button button-primary" type="submit">Log In</button></div>
+        </form>
+      </div>
+      <div id="forgot-pane" class="auth-pane" hidden>
+        <p class="eyebrow">ACCOUNT HELP</p><h1>Reset your password</h1>
+        <p class="form-hint">A service would send a one-time code to your saved email or phone. Here, the code appears on screen instead.</p>
+        <button id="request-reset-code" class="button button-secondary">Show verification code</button>
+        <form id="reset-form" class="form-grid auth-reset-form" hidden>
+          <p id="reset-code-message" class="full-width verification-note"></p>
+          <label class="full-width">One-time code<input name="code" inputmode="numeric" maxlength="6" required></label>
+          <label class="full-width">New password<input name="password" type="password" minlength="8" required></label>
+          <div class="full-width"><button class="button button-primary" type="submit">Reset password</button><button id="resend-reset-code" type="button" class="text-button">Resend code</button></div>
+        </form>
+      </div>
+      <div id="auth-notice" class="auth-notice" role="status" hidden></div>
+    </section>
+  </main>
+
+  <div id="app" class="app-shell" hidden>
+    <header class="topbar">
+      <a class="brand" href="#" data-page="dashboard"><img class="brand-mark" src="{{ url_for('static', filename='site-logo.png') }}" alt=""> Civic Track</a>
+      <div class="top-actions"><button id="install-app" class="install-button" type="button">Install app</button><button id="profile-link" class="profile-link">Profile</button><button id="profile-avatar" class="avatar" aria-label="Open profile"></button>
+        <button id="menu-button" class="menu-button" aria-label="Open navigation" aria-expanded="false"><span></span><span></span><span></span></button></div>
+    </header>
+    <div class="app-layout">
+      <aside id="sidebar" class="sidebar">
+        <p class="sidebar-label">YOUR SPACE</p>
+        <button class="nav-link active" data-page="dashboard"><span>⌂</span> Overview</button>
+        <button class="nav-link" data-page="volunteer"><span>♡</span> Log Volunteer Hours</button>
+        <button class="nav-link" data-page="assignments"><span>✓</span> Log Assignments/Tasks</button>
+        <button class="nav-link" data-page="calendar"><span>▦</span> Calendar</button>
+        <button class="nav-link" data-page="progress"><span>◉</span> Progress Report</button>
+        <button class="nav-link" data-page="achievements"><span>✦</span> Achievements</button>
+        <button class="nav-link" data-page="settings"><span>⚙</span> Settings</button>
+        <div class="sidebar-tip"><span>🌱</span><strong>Small steps add up.</strong><p>Every hour you give makes a difference.</p></div>
+      </aside>
+
+      <main class="content">
+        <div id="notice" class="notice" role="status" hidden></div>
+        <section class="page active" id="page-dashboard">
+          <div class="page-heading"><div><p class="eyebrow">YOUR COMMUNITY JOURNEY</p><h1>Hello, <span id="hello-name">volunteer</span> <span aria-hidden="true">✦</span></h1><p>Here's how your good work is adding up.</p></div>
+            <label class="period-select">Show<select id="period-select" aria-label="Progress time period"><option value="all">All time</option><option value="week">This week</option><option value="month">This month</option><option value="year">This year</option></select></label></div>
+          <section class="announcement"><div class="announcement-icon">📣</div><div><strong>A little progress goes a long way</strong><p>Log a volunteer shift or finish an assignment to keep your momentum going.</p></div></section>
+          <div class="stats-grid">
+            <article class="stat-card"><div class="stat-icon teal">♡</div><p>Volunteer hours</p><strong id="hours-value">0</strong><span>hours in selected period</span></article>
+            <article class="stat-card"><div class="stat-icon blue">✓</div><p>Assignments done on time</p><strong id="assignments-value">0<span class="stat-total"> / 0</span></strong><span>completed on or before the due date</span></article>
+            <article class="stat-card"><div class="stat-icon yellow">✦</div><p>Badges earned</p><strong id="badges-value">0</strong><span>milestones celebrated</span></article>
+          </div>
+          <div class="dashboard-grid">
+            <article class="panel goal-panel"><div class="panel-title"><div><p class="eyebrow">KEEP GOING</p><h2>Your volunteer goal</h2></div><button class="text-button" data-page="volunteer">Set a goal</button></div><div id="goal-content"></div></article>
+            <article class="panel assignments-panel"><div class="panel-title"><div><p class="eyebrow">COMING UP</p><h2>Upcoming assignments</h2></div><button class="text-button" data-page="assignments">See all</button></div><div id="upcoming-list"></div></article>
+          </div>
+          <div class="dashboard-grid">
+            <article class="panel"><div class="panel-title"><div><p class="eyebrow">YOUR IMPACT</p><h2>Community value estimate</h2></div></div><div class="impact-total" id="impact-value">$0</div><p id="impact-caption" class="form-hint">An illustrative estimate using your chosen hourly rate.</p></article>
+            <article class="panel"><div class="panel-title"><div><p class="eyebrow">NEXT MILESTONE</p><h2>Hours to your next badge</h2></div></div><div class="milestone-track"><div id="milestone-bar"></div></div><p id="milestone-label" class="form-hint"></p></article>
+          </div>
+          <article class="panel recent-badges"><div class="panel-title"><div><p class="eyebrow">MILESTONES</p><h2>Recent badges</h2></div><button class="text-button" data-page="achievements">View all</button></div><div id="badge-preview" class="badge-row"></div></article>
+        </section>
+
+        <section class="page" id="page-volunteer">
+          <div class="page-heading"><div><p class="eyebrow">GIVE YOUR TIME</p><h1>Volunteer hours</h1><p>Keep a record of the good you do in your community.</p></div></div>
+          <div class="two-column">
+            <article class="panel"><div class="panel-title"><div><p class="eyebrow">NEW ENTRY</p><h2>Log volunteer hours</h2></div></div>
+              <form id="volunteer-form" class="form-grid">
+                <label>Date<input name="date" type="date" required></label><label>Hours<input name="hours" type="number" min="0.25" max="24" step="0.25" placeholder="e.g. 2" required></label>
+                <label class="full-width">What did you do?<input name="activity" maxlength="120" placeholder="Helped at a food pantry" required></label>
+                <label class="full-width">Where did you volunteer?<input name="location" maxlength="120" placeholder="Community food bank" required></label>
+                <label class="full-width">School or organization (optional)<select name="organization"><option value="">Choose an affiliation</option></select></label>
+                <p class="form-hint full-width">Affiliations you add to your profile will appear here. <button id="manage-affiliations" class="text-button" type="button" data-page="profile">Add an affiliation</button></p>
+                <label class="full-width">Advisor/contact (optional)<input name="advisor" maxlength="120" placeholder="Name or contact"></label>
+                <label class="full-width">Photo proof (optional)<input name="proof_photo" type="file" accept="image/png,image/jpeg,image/webp"></label>
+                <div class="full-width"><button class="button button-primary" type="submit">Save hours</button></div>
+              </form>
+            </article>
+            <article class="panel"><div class="panel-title"><div><p class="eyebrow">YOUR NEXT MILESTONE</p><h2>Set a personal goal</h2></div></div>
+              <form id="goal-form" class="form-grid"><label class="full-width">Hours to aim for<input name="target" type="number" min="0.25" step="0.25" placeholder="e.g. 10" required></label><label>Start date<input name="starts_on" type="date" required></label><label>End date<input name="ends_on" type="date" required></label><div class="full-width"><button class="button button-secondary" type="submit">Set my goal</button></div></form>
+              <p class="form-hint">Choose any date range—from one week to a date that works for you.</p>
+            </article>
+          </div>
+          <article class="panel table-panel"><div class="panel-title"><div><p class="eyebrow">YOUR STORY</p><h2>Recent volunteer entries</h2></div></div><div class="table-wrap"><table><thead><tr><th>Date</th><th>Activity</th><th>Place</th><th>Organization</th><th>Hours</th><th>Advisor</th><th>Proof</th></tr></thead><tbody id="volunteer-rows"></tbody></table></div></article>
+        </section>
+
+        <section class="page" id="page-assignments">
+          <div class="page-heading"><div><p class="eyebrow">ONE STEP AT A TIME</p><h1>Assignments</h1><p>Keep track of what is due and celebrate what you finish.</p></div></div>
+          <article class="panel"><div class="panel-title"><div><p class="eyebrow">ADD TO YOUR LIST</p><h2>New assignment</h2></div></div>
+            <form id="assignment-form" class="form-grid assignment-form">
+              <label>Assignment name<input name="title" maxlength="120" placeholder="Science project" required></label><label>Subject or type<input name="subject" maxlength="80" placeholder="Science" required></label>
+              <label>Due date<input name="due_date" type="date" required></label><label>Study reminder (optional)<input name="reminder_at" type="datetime-local"></label>
+              <label class="full-width">Description (optional)<input name="description" maxlength="240" placeholder="A few helpful details"></label>
+              <div class="full-width"><button class="button button-primary" type="submit">Add assignment</button></div>
+            </form><p class="form-hint">Reminders appear as browser notifications only while the app is open and permission is granted.</p>
+          </article>
+          <article class="panel table-panel"><div class="panel-title"><div><p class="eyebrow">YOUR TASKS</p><h2>Assignment list</h2></div></div><div id="assignment-list" class="assignment-list"></div></article>
+        </section>
+
+        <section class="page" id="page-calendar">
+          <div class="page-heading"><div><p class="eyebrow">PLAN YOUR MONTH</p><h1>Calendar</h1><p>See upcoming due dates and the days you volunteered.</p></div></div>
+          <article class="panel"><div class="calendar-heading"><button id="calendar-prev" class="button button-secondary" aria-label="Previous month">←</button><h2 id="calendar-month"></h2><button id="calendar-next" class="button button-secondary" aria-label="Next month">→</button></div><div class="calendar-grid" id="calendar-grid"></div><div class="calendar-legend"><span><i class="legend-assignment"></i> Assignment due</span><span><i class="legend-volunteer"></i> Volunteer hours</span></div></article>
+        </section>
+
+        <section class="page" id="page-progress">
+          <div class="page-heading"><div><p class="eyebrow">LOOK AT YOUR PROGRESS</p><h1>Progress report</h1><p>See your progress and print a report for your records.</p></div><button id="print-report" class="button button-primary">Print / Save PDF</button></div>
+          <div class="report-circles">
+            <article class="panel report-circle-card"><h2>Volunteer hours</h2><div class="progress-ring large-ring" id="report-volunteer-ring"><strong id="report-volunteer-percent">0%</strong></div><p id="report-volunteer-label"></p></article>
+            <article class="panel report-circle-card"><h2>Assignments completed</h2><div class="progress-ring large-ring blue-ring" id="report-assignment-ring"><strong id="report-assignment-percent">0%</strong></div><p id="report-assignment-label"></p></article>
+          </div>
+          <article class="panel report-selector"><div class="panel-title"><div><p class="eyebrow">PRINTABLE REPORT CARD</p><h2 id="report-title">Volunteer hours report</h2></div><label>Choose report<select id="report-type"><option value="volunteer">Volunteer hours</option><option value="assignments">Assignments completed on time</option></select></label></div><div id="report-preview"></div></article>
+        </section>
+
+        <section class="page" id="page-achievements">
+          <div class="page-heading"><div><p class="eyebrow">LOOK HOW FAR YOU'VE COME</p><h1>Achievements</h1><p>Celebrate each milestone and pin up to three favorite badges.</p></div><button id="print-badges" class="button button-secondary">Print badges</button></div>
+          <article class="panel"><div class="panel-title"><div><p class="eyebrow">YOUR TROPHY CASE</p><h2>Badges earned</h2></div></div><div id="all-badges" class="badge-grid"></div><div class="milestone-note"><strong>Volunteer milestones</strong><span>Personal goal · 10 · 25 · 50 · 100 hours, then every 50 hours</span></div></article>
+        </section>
+
+        <section class="page" id="page-profile">
+          <div class="page-heading"><div><p class="eyebrow">ABOUT YOU</p><h1>Profile</h1><p>Manage your personal details and volunteer records.</p></div></div>
+          <div class="two-column">
+            <article class="panel"><div class="panel-title"><div><p class="eyebrow">PERSONAL INFORMATION</p><h2>Your profile</h2></div></div>
+              <form id="profile-form" class="form-grid">
+                <label class="full-width">Full name<input name="full_name" maxlength="120" required></label><label>Birthdate<input name="birthdate" type="date" required></label><label>Username<input name="username" maxlength="60" required></label>
+                <label>Email<input name="email" type="email" maxlength="254"></label><label>Phone<input name="phone" type="tel" maxlength="40"></label>
+                <label class="full-width">Profile photo<input name="photo" type="file" accept="image/png,image/jpeg,image/webp"></label>
+                <div class="full-width"><button id="remove-profile-photo" class="text-button" type="button">Use Civic Track logo instead</button></div>
+                <div class="full-width"><button class="button button-primary" type="submit">Save profile</button></div>
+              </form>
+            </article>
+            <article class="panel"><div class="panel-title"><div><p class="eyebrow">ORGANIZATIONS & CLUBS</p><h2>Your affiliations</h2></div></div>
+              <form id="organization-form" class="form-grid"><label class="full-width">School or organization<input name="name" maxlength="120" required></label><label class="full-width">Type<input name="kind" maxlength="60" placeholder="School, club, organization"></label><div class="full-width"><button class="button button-secondary" type="submit">Add affiliation</button></div></form>
+              <div id="organization-list" class="simple-list"></div>
+            </article>
+          </div>
+          <div class="dashboard-grid">
+            <article class="panel"><div class="panel-title"><div><p class="eyebrow">YOUR SHOWCASE</p><h2>Favorite badges</h2></div><button class="text-button" data-page="achievements">Choose badges</button></div><div id="profile-pinned-badges" class="badge-row"></div></article>
+            <article class="panel"><div class="panel-title"><div><p class="eyebrow">OPTIONAL VAULT</p><h2>Digital signatures</h2></div></div><form id="signature-form" class="form-grid"><label>Label<input name="name" maxlength="100" placeholder="Advisor approval" required></label><label>Signature image<input name="image" type="file" accept="image/png,image/jpeg,image/webp" required></label><div class="full-width"><button class="button button-secondary" type="submit">Save signature</button></div></form><p class="form-hint">Optional local reference only; signatures are not verified approvals.</p><div id="signature-list" class="simple-list"></div></article>
+          </div>
+          <article class="panel"><div class="panel-title"><div><p class="eyebrow">FOR YOUR NEXT OPPORTUNITY</p><h2>Resume export</h2></div><button id="export-resume" class="button button-primary">Print / Save resume PDF</button></div><p class="form-hint">Creates a printable draft from your volunteer hours, affiliations, and tasks. Check it before sharing.</p></article>
+        </section>
+
+        <section class="page" id="page-settings">
+          <div class="page-heading"><div><p class="eyebrow">MAKE IT YOURS</p><h1>Settings</h1><p>Customize your view, reminders, and account.</p></div></div>
+          <div class="two-column">
+            <article class="panel"><div class="panel-title"><div><p class="eyebrow">CUSTOMIZE LAYOUT</p><h2>Appearance & dashboard</h2></div></div>
+              <form id="settings-form" class="form-grid">
+                <label>Accent color<input name="theme" type="color"></label><label>Text size<select name="font_scale"><option value="0.85">Small</option><option value="1">Default</option><option value="1.15">Large</option><option value="1.3">Extra large</option></select></label>
+                <label>Dashboard period<select name="period"><option value="all">Since I joined</option><option value="week">This week</option><option value="month">This month</option><option value="year">This year</option></select></label>
+                <label>Illustrative impact $ / hour<input name="impact_rate" type="number" min="0" max="1000" step="0.5"></label>
+                <div class="full-width"><button class="button button-primary" type="submit">Save appearance</button></div>
+              </form><p class="form-hint">Impact is an estimate you choose for motivation, not an official valuation.</p>
+            </article>
+            <article class="panel"><div class="panel-title"><div><p class="eyebrow">REMINDERS</p><h2>Notifications</h2></div></div>
+              <form id="notification-form" class="form-grid"><label class="toggle-label full-width"><input name="notifications" type="checkbox"> Enable browser notifications while Civic Track is open</label><label class="full-width">Daily reminder time<input name="reminder_time" type="time" required></label><div class="full-width"><button class="button button-secondary" type="submit">Save notifications</button></div></form>
+              <p class="form-hint">Requires browser permission. Daily and study reminders work only while this page is open; no server or background delivery is configured.</p>
+              <button id="test-notification" class="text-button">Send a test notification</button>
+            </article>
+          </div>
+          <article class="panel"><div class="panel-title"><div><p class="eyebrow">SECURE YOUR ACCOUNT</p><h2>Change password</h2></div></div>
+            <p class="form-hint">A service would send a one-time code. Here, the code appears on screen and is not sent to your contact.</p>
+            <button id="request-change-code" class="button button-secondary">Show verification code</button>
+            <form id="change-password-form" class="form-grid change-password-form" hidden><p id="change-code-message" class="full-width verification-note"></p><label>One-time code<input name="code" inputmode="numeric" maxlength="6" required></label><label>Current password<input name="current_password" type="password" required></label><label class="full-width">New password<input name="new_password" type="password" minlength="8" required></label><div class="full-width"><button class="button button-primary" type="submit">Change password</button></div></form>
+          </article>
+          <article class="panel danger-panel"><div class="panel-title"><div><p class="eyebrow">PERMANENT ACTION</p><h2>Delete account and saved data</h2></div></div><p class="form-hint">This permanently deletes your profile, logs, goals, assignments, badges, affiliations, signatures, and settings from this local database.</p><form id="delete-account-form" class="delete-row"><label>Confirm with your password<input name="password" type="password" required></label><button class="button button-danger" type="submit">Delete everything</button></form></article>
+          <button id="troubleshoot-button" class="button button-secondary">Troubleshoot / refresh app</button>
+          <button id="logout-button" class="button button-plain">Log out</button>
+        </section>
+        <footer>Built for doing good, one hour at a time <span>♡</span></footer>
+      </main>
+    </div>
+  </div>
+  <dialog id="install-help" class="install-help">
+    <form method="dialog"><button class="dialog-close" aria-label="Close" value="close">×</button></form>
+    <img class="logo-mark" src="{{ url_for('static', filename='site-logo.png') }}" alt="" aria-hidden="true">
+    <h2>Install Civic Track</h2>
+    <p id="install-instructions">Add Civic Track to your device's home screen for an app-like experience.</p>
+    <button id="close-install-help" class="button button-primary">Got it</button>
+  </dialog>
+</body>
+</html>
